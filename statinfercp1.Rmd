@@ -1,0 +1,53 @@
+---
+title: "Simulation and Basic Inferential Data Analysis"
+author: "Kent Mok"
+date: "September 9, 2015"
+output: html_document
+---
+
+##Overview: 
+The purpose of this experiment is to investigate the exponential distribution in R, and to compare it with the Central Limit Theorem. The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter and the mean of exponential distribution is 1/lambda. This experiment will investigate the distribution of averages of 40 exponentials using a thousand simulations.
+
+##Simulations:
+Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponentials.  You should
+
+1. Show the sample mean and compare it to the theoretical mean of the distribution.
+
+2. Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+3. Show that the distribution is approximately normal.
+Include English explanations of the simulations you ran, with the accompanying R code. Your explanations should make clear what the R code accomplishes.
+
+##Sample Mean versus Theoretical Mean: Include figures with titles. In the figures, highlight the means you are comparing. Include text that explains the figures and what is shown on them, and provides appropriate numbers.
+```{r}
+library(ggplot2)
+
+set.seed(1234)
+
+lambda = 0.2
+mns = NULL
+for (i in 1:1000)
+    mns = c(mns, mean(rexp(40, lambda)))
+ggplot() + aes(mns) + geom_histogram(binwidth = 1)
+
+hist(mns)
+lines(density(mns))
+abline(v = 1/lambda, col = "red")
+```
+
+##Sample Variance versus Theoretical Variance: Include figures (output from R) with titles. Highlight the variances you are comparing. Include text that explains your understanding of the differences of the variances.
+
+##Distribution: Via figures and text, explain how one can tell the distribution is approximately normal.
+
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
