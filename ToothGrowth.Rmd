@@ -1,0 +1,12 @@
+---
+title: "ToothGrowth"
+author: "Kent Mok"
+date: "September 17, 2015"
+output: html_document
+---
+
+```{r}
+library(datasets)
+data(ToothGrowth)
+head(ToothGrowth)
+```
