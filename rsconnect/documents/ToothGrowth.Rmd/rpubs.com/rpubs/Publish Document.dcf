@@ -1,0 +1,7 @@
+name: Publish Document
+account: rpubs
+server: rpubs.com
+bundleId:
+        https://api.rpubs.com/api/v1/document/111765/fbc3fc769df946b1bea2df82115be6af
+url: http://rpubs.com/kmok23/111765
+when: 1443141653.0623

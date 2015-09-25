@@ -2,11 +2,178 @@
 title: "ToothGrowth"
 author: "Kent Mok"
 date: "September 17, 2015"
-output: html_document
+output: pdf_document
 ---
 
+##Overview: 
+The purpose of this experiment is to analyze the ToothGrowth data in the R 
+datasets package. The data contains the length of odontoblasts (cells 
+responsible for tooth growth) in 60 guinea pigs, each receiving one of three
+dose levels of Vitamin C (0.5, 1.0, and 2.0 mg) with one of two delivery 
+methods (orange juice or an aqueous solution of ascorbic acid).  No guinea pig
+received a dose of zero as they would acquire scurvy at that dose.
+
+##1. Load the ToothGrowth data and perform some basic exploratory data analyses.
 ```{r}
-library(datasets)
-data(ToothGrowth)
-head(ToothGrowth)
+library(datasets)  # Load datasets library
+data(ToothGrowth)  # Load ToothGrowth data
+str(ToothGrowth)  # Show structure of ToothGrowth data
 ```
+The ToothGrowth data frame consists of 60 observations on 3 variables.  
+
+* The **len** variable is a numeric that appears to describe the length of the
+odontoblasts.  
+* The **supp** variable is a factor with two levels that appears to record 
+which supplement was used, OJ or VC.  
+* The **dose** variable is a numeric that appears to describe the dosage of 
+the supplement used.  
+
+The first 30 observations of the dataframe consists of observations where the
+supplement VC was used. The latter 30 observations of the dataframe consists of
+observations where the supplement OJ was used.  
+  
+The dataframe can be further split down by the dosage of the supplement used. 
+For each supplement, the dosage observations appear to be 10 each at 0.5, 1.0,
+and 2.0. We can explore these six subsets by looking at the lengths of the 
+odontoblasts based on the supplement used.
+
+##2. Provide a basic summary of the data.
+```{r}
+library(lattice)
+xyplot(len ~ dose | supp,  # Plot length vs dosage given supplement
+       data = ToothGrowth,
+       xlab = "Dosage",
+       ylab = "Length",
+       main = "Length vs. Dosage given Supplement",
+       type = c("p", "a")  # Adds line through mean of lengths based on dosage
+       )
+```
+  
+  The plot above shows that in general, the average length of odontoblasts were 
+longer for orange juice as a supplement versus ascorbic acid as a supplement.
+
+***
+```{r}
+boxplot(len ~ supp * dose, 
+        data = ToothGrowth,
+        col = c("orange","red"),
+        main = "Tooth Growth",
+        xlab = "Supplement and Dose",
+        ylab = "Odontoblast Length")
+```
+  
+  The mean values of the lengths at 0.5 and 1.0 mg of orange juice were higher 
+than the lengths for the same dosages of ascorbic acid. At 2.0 mg, however, the
+mean of the lengths for the two supplements were close in value.
+
+##3. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose.
+The data of odontoblast length can be considered by grouping based on the 
+supplement or by grouping based on the dosage.
+
+***
+
+#### Test by supplement
+Based on grouping by the supplement, it can be hypothesized that OJ yields 
+higher length values than VC. The null hypothesis for this would be
+$H_o: \mu_{OJ} - \mu_{VC} > 0$. If the difference between the odontoblast
+lengths for supplements orange juice (OJ) and ascorbic acid (VC) is reliably
+greater than 0 (95% confidence), then the null hypothesis can be accepted and
+the conclusion is that orange juice creates a significant difference in 
+odontoblast length over ascorbic acid.
+```{r}
+t.test(len ~ supp, data = ToothGrowth)
+```
+The above t-test result shows that the 95% confidence interval contains zero,
+so the null hypothesis is rejected.
+
+***
+
+#### Test by dosage
+Based on grouping by the dosage, it can be hypothesized that dosages of 1.0 mg
+yield a higher length values than dosages of 0.5 mg. In addition, dosages of
+2.0 mg yield higher length values than dosages of 1.0 mg as well as dosages of 
+0.5 mg. The null hypotheses for these would be 
+
+* $H_o: \mu_{1.0mg} - \mu_{0.5mg} > 0$
+* $H_o: \mu_{2.0mg} - \mu_{1.0mg} > 0$
+* $H_o: \mu_{2.0mg} - \mu_{0.5mg} > 0$.
+
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$dose == 1], 
+       ToothGrowth$len[ToothGrowth$dose == 0.5])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{1.0mg} - \mu_{0.5mg} > 0$ is accepted.  
+
+***
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$dose == 2], 
+       ToothGrowth$len[ToothGrowth$dose == 1])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{2.0mg} - \mu_{1.0mg} > 0$ is accepted.  
+
+***
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$dose == 2], 
+       ToothGrowth$len[ToothGrowth$dose == 0.5])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{2.0mg} - \mu_{0.5mg} > 0$ is accepted.  
+
+***
+
+#### Test by supplement and dosage
+The following t-tests analyze the length data based on the supplements for a 
+given dosage level.
+  
+At dosage levels of 0.5 mg, it can be hypothesized that orange juice yields a 
+higher odontoblast length than ascorbic acid or: 
+$H_o: \mu_{OJ @ 0.5mg} - \mu_{VC @ 0.5mg} > 0$  
+  
+At dosage levels of 1.0 mg, it can be hypothesized that orange juice yields a 
+higher odontoblast length than ascorbic acid or: 
+$H_o: \mu_{OJ @ 1.0mg} - \mu_{VC @ 1.0mg} > 0$  
+
+At dosage levels of 2.0 mg, it can be hypothesized that orange juice yields a 
+higher odontoblast length than ascorbic acid or: 
+$H_o: \mu_{OJ @ 2.0mg} - \mu_{VC @ 2.0mg} > 0$  
+
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 0.5], 
+       ToothGrowth$len[ToothGrowth$supp == "VC" & ToothGrowth$dose == 0.5])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{OJ @ 0.5mg} - \mu_{VC @ 0.5mg} > 0$
+is accepted.  
+
+***
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 1], 
+       ToothGrowth$len[ToothGrowth$supp == "VC" & ToothGrowth$dose == 1])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{OJ @ 1.0mg} - \mu_{VC @ 1.0mg} > 0$
+is accepted.   
+
+***
+```{r}
+t.test(ToothGrowth$len[ToothGrowth$supp == "OJ" & ToothGrowth$dose == 2], 
+       ToothGrowth$len[ToothGrowth$supp == "VC" & ToothGrowth$dose == 2])
+```
+The above t-test shows that the entire 95% confidence interval is greater than
+zero, so the null hypothesis $H_o: \mu_{OJ @ 2.0mg} - \mu_{VC @ 2.0mg} > 0$
+is accepted.    
+
+##4. State your conclusions and the assumptions needed for your conclusions. 
+####Conclusions
+
+* When the t-test is performed on the length vs supplement only, the null hypothesis $H_o: \mu_{OJ} - \mu_{VC} > 0$ is rejected. It can be concluded that there is no significant difference in odontoblast lengths across supplement types.
+* When the t-test is performed on the length vs dosage only, the null hypotheses for all three dosages were accepted. It can be concluded that higher dosage levels have a significant effect on odontoblast lengths.
+* When the t-test is performed on the length vs supplement with the dosages isolated, the null hypotheses at dosage levels of 0.5 mg and 1.0 mg were accepted but the null hypothesis at dosage level of 2.0 mg was rejected. The conclusion is that at the lower dosages of 0.5 mg and 1.0 mg, the orange juice had a significantly higher effect on the odontoblast length than the ascorbic acid, but the significance is lost at the dosage level of 2.0 mg.
+
+####Assumptions
+
+* For this analysis, it must be assumed that the samples were selected randomly from the population.
+* It must also be assumed that the population follows a normal distribution.
+* It must also be assumed that the samples unequal variances.
