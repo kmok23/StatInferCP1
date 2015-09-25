@@ -177,3 +177,7 @@ is accepted.
 * For this analysis, it must be assumed that the samples were selected randomly from the population.
 * It must also be assumed that the population follows a normal distribution.
 * It must also be assumed that the samples unequal variances.
+
+\pagebreak
+
+##Appendix
