@@ -28,13 +28,12 @@ the mean and variance for the exponential distribution.
 set.seed(1234)
 
 lambda = 0.2
-expdf <- data.frame(replicate(1000, rexp(40, lambda)))
+numofsims = 1000
+expdf <- data.frame(replicate(numofsims, rexp(40, lambda)))
 ```
 
 ##Sample Mean versus Theoretical Mean:
 ```{r fig.height=3, fig.width=6}
-
-numofsims = 1000
 mns = apply(expdf, 2, mean)  # Take mean value of each of the 40 samples
 
 samplemean = mean(mns)  # Average of the 1000 means
@@ -49,9 +48,9 @@ text(x = samplemean, y = 0.2, labels = round(samplemean,2))
 
 The above figure shows the distribution of the thousand simulated means for 40
 exponentials. The sample mean is shown as a green vertical line at the sample
-mean of `r round(samplemean,3)`. The theoretical mean is also shown as a red vertical line at 
-$X=5$. It can be seen that the theoretical mean coincides with the sample mean,
-at least for a sample of 1000 simulations.
+mean of `r round(samplemean,3)`. The theoretical mean is also shown as a red 
+vertical line at $X=5$. It can be seen that the theoretical mean coincides with 
+the sample mean, at least for a sample of 1000 simulations.
 
 ##Sample Variance versus Theoretical Variance:
 ```{r}
@@ -75,18 +74,24 @@ with the theoretical variance, at least for a sample of 1000 simulations.
 ***
 
 ##Distribution: Via figures and text, explain how one can tell the distribution is approximately normal.
-
+The Central Limit Theorem states that the distribution of averages of 
+independent and identically distributed variables becomes that of a standard 
+normal as the sample size increases, so 
+$\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ would have a distribution like that of
+a standard normal for large $n$. From the above simulation, $n=1000$, $\mu=5$, 
+and $\sigma=\sqrt Var[X]=5$. Applying this to the above simulation of the 
+exponential distribution yields the following plots.
 ```{r}
 library(ggplot2)
-nosim <- 1000
 cfunc <- function(x, n) sqrt(n) * (mean(x) - 5) / 5
 dat <- data.frame(
-  x = c(apply(matrix(rexp(nosim * 10, lambda), nosim), 1, cfunc, 10),
-        apply(matrix(rexp(nosim * 20, lambda), nosim), 1, cfunc, 20),
-        apply(matrix(rexp(nosim * 40, lambda), nosim), 1, cfunc, 40)
+  x = c(apply(matrix(rexp(numofsims * 10, lambda), numofsims), 1, cfunc, 10),
+        apply(matrix(rexp(numofsims * 20, lambda), numofsims), 1, cfunc, 20),
+        apply(matrix(rexp(numofsims * 40, lambda), numofsims), 1, cfunc, 40)
         ),
-  size = factor(rep(c(10, 20, 40), rep(nosim, 3))))
-g <- ggplot(dat, aes(x = x, fill = size)) + geom_histogram(colour = "black", binwidth = 0.2, aes(y = ..density..)) 
+  size = factor(rep(c(10, 20, 40), rep(numofsims, 3))))
+g <- ggplot(dat, aes(x = x, fill = size)) + 
+     geom_histogram(colour = "black", binwidth = 0.2, aes(y = ..density..)) 
 g <- g + stat_function(fun = dnorm, size = 1)
 g + facet_grid(size ~ .)
 ```
