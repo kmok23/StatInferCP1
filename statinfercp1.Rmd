@@ -1,41 +1,50 @@
 ---
 title: "Simulation and Basic Inferential Data Analysis"
 author: "Kent Mok"
-date: "September 9, 2015"
 output: pdf_document
 ---
 
 ##Overview: 
 The purpose of this experiment is to investigate the exponential distribution 
 in R, and to compare it with the Central Limit Theorem. The exponential 
-distribution can be simulated in R with rexp(n, lambda) where lambda is the 
-rate parameter and the mean of exponential distribution is 1/lambda. (Lambda 
-will be set to 0.2 for this simulation.) This experiment will use 1000 
-simulations of the averages of 40 exponentials to investigate the distribution.
+distribution can be simulated in R with rexp($n$, $\lambda$) where $\lambda$ is 
+the rate parameter and the mean of exponential distribution is 
+$\frac{1}{\lambda}$. ($\lambda$ will be set to 0.2 for this simulation.) This 
+experiment will use 1000 simulations of the average of 40 exponentials to 
+investigate the distribution.
 
-The theoretical mean of the exponential distribution is $\beta = 1/\lambda$. 
-For $\lambda = 0.2$, $\beta = 5$. The theoretical variance of the exponential 
-distribution is given as $1/\lambda^2$. For $\lambda = 0.2$, the theoretical
-variance is $1/\lambda^2 = 1/0.2^2 = 25$.
+The mean of the exponential distribution is $\beta = \frac{1}{\lambda}$. For 
+$\lambda = 0.2$, $\beta = 5$. The variance of the exponential distribution is 
+given as $1/\lambda^2$. For $\lambda = 0.2$, the variance is 
+$1/\lambda^2 = 1/0.2^2 = 25$.
 
 ##Simulation:
 The simulation takes 40 samples of the exponential distribution 1000 times. 
-This creates a data frame with 1000 variables with 40 observations each. The 
-mean and variance of each variable can be taken to analyze the distribution of
-the mean and variance for the exponential distribution. 
+This creates a data frame with 40 variables and 1000 observations each. The 
+mean each observation is used to create the distribution of the mean of the 
+exponential distribution. 
 
 ```{r}
 set.seed(1234)
 
 lambda = 0.2
 numofsims = 1000
-expdf <- data.frame(replicate(numofsims, rexp(40, lambda)))
+# Create data frame of the 1000 simulations of 40 exponentials
+expdf <- data.frame(t(replicate(numofsims, rexp(40, lambda))))
 ```
 
-##Sample Mean versus Theoretical Mean:
-```{r fig.height=3, fig.width=6}
-mns = apply(expdf, 2, mean)  # Take mean value of each of the 40 samples
+***
 
+##Sample Mean versus Theoretical Mean:
+The Central Limit Theorem states that for large enough sample sizes, the 
+distribution of the mean of independent and identically distributed samples will
+be a standard normal distribution with mean $\mu$ and variance 
+$\frac{\sigma^2}{n}$. Plotting the distribution of the mean of exponentials 
+should yield a normal distribution curve. For the exponential distribution with 
+$n=40$, $\mu=\beta=5$ and $\frac{\sigma^2}{n}=\frac{25}{40}=0.625$.
+
+```{r echo=FALSE}
+mns = apply(expdf, 1, mean)  # Take mean value of each of the 40 samples
 samplemean = mean(mns)  # Average of the 1000 means
 
 hist(mns, freq = FALSE, main = "Distribution of the Mean of 40 Exponentials",
@@ -47,52 +56,93 @@ text(x = samplemean, y = 0.2, labels = round(samplemean,2))
 ```
 
 The above figure shows the distribution of the thousand simulated means for 40
-exponentials. The sample mean is shown as a green vertical line at the sample
-mean of `r round(samplemean,3)`. The theoretical mean is also shown as a red 
-vertical line at $X=5$. It can be seen that the theoretical mean coincides with 
-the sample mean, at least for a sample of 1000 simulations.
-
-##Sample Variance versus Theoretical Variance:
-```{r}
-sampvar = var(mns)
-print(sampvar)
-sampvar = NULL
-for (i in 1:numofsims)
-    sampvar = c(sampvar, var(rexp(40, lambda)))
-
-ylimits = range(density(sampvar)$y)
-hist(sampvar, freq = FALSE, main = "Distribution of the Variance of 40 Exponentials", ylim = ylimits)
-lines(density(sampvar))
-abline(v = 1/lambda^2, col = "red")
-```
-
-The above figure shows the distribution of one thousand simulations of the 
-variance value for 40 exponentials. The theoretical variance is shown as a red 
-vertical line at $X = 25$. It can be seen that the sample variance coincides 
-with the theoretical variance, at least for a sample of 1000 simulations.
+exponentials. The mean of the distribution is shown as a green vertical line at 
+**`r round(samplemean,3)`**. The theoretical mean is shown as a red 
+vertical line at $x=5$. It is apparent that the sample mean for the mean of 40 
+exponentials matches the theoretical mean of $\mu=5$.
 
 ***
 
-##Distribution: Via figures and text, explain how one can tell the distribution is approximately normal.
-The Central Limit Theorem states that the distribution of averages of 
-independent and identically distributed variables becomes that of a standard 
-normal as the sample size increases, so 
-$\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ would have a distribution like that of
-a standard normal for large $n$. From the above simulation, $n=1000$, $\mu=5$, 
-and $\sigma=\sqrt Var[X]=5$. Applying this to the above simulation of the 
-exponential distribution yields the following plots.
-```{r}
-library(ggplot2)
-cfunc <- function(x, n) sqrt(n) * (mean(x) - 5) / 5
-dat <- data.frame(
-  x = c(apply(matrix(rexp(numofsims * 10, lambda), numofsims), 1, cfunc, 10),
-        apply(matrix(rexp(numofsims * 20, lambda), numofsims), 1, cfunc, 20),
-        apply(matrix(rexp(numofsims * 40, lambda), numofsims), 1, cfunc, 40)
-        ),
-  size = factor(rep(c(10, 20, 40), rep(numofsims, 3))))
-g <- ggplot(dat, aes(x = x, fill = size)) + 
-     geom_histogram(colour = "black", binwidth = 0.2, aes(y = ..density..)) 
-g <- g + stat_function(fun = dnorm, size = 1)
-g + facet_grid(size ~ .)
+##Sample Variance versus Theoretical Variance:
+```{r echo=FALSE}
+sampvar = var(mns)  # Variance of the 1000 means
 ```
 
+The variance of these 1000 means of 40 exponentials is `r round(sampvar,3)`. The 
+theoretical variance of the mean of 40 exponentials is 
+$\frac{\sigma^2}{n}=0.625$. At $n=40$, the variance is quite small and would
+continue to decrease as the sample size increases.
+
+***
+
+##Distribution:
+The Central Limit Theorem states that the distribution of averages of 
+independent and identically distributed variables becomes that of a normal 
+distribution as the sample size increases, so 
+$\frac{\sqrt n (\bar X_n - \mu)}{\sigma}$ would have a distribution like that of
+a standard normal for large $n$. From the above simulation, $\mu=5$ and 
+$\sigma=\sqrt{Var[X]}=5$. Applying this to the above simulation of the 
+exponential distribution yields the following plots.
+```{r echo=FALSE}
+library(ggplot2)
+
+cfunc <- function(x, n) sqrt(n) * (mean(x) - 5) / 5  # CLT function
+dat <- data.frame(
+  x = c(apply(expdf[,1:2], 1, cfunc, 2),  # Apply func to 1000 obs. of 2 var
+        apply(expdf[,1:10], 1, cfunc, 10),  # Apply func to 1000 obs. of 10 var
+        apply(expdf[,1:40], 1, cfunc, 40)  # Apply func to 1000 obs. of 40 var
+        ),
+  size = factor(rep(c(2, 10, 40), rep(numofsims, 3))))  # Create factor
+g <- ggplot(dat, aes(x = x, fill = size)) + 
+     geom_histogram(colour = "black", binwidth = 0.2, aes(y = ..density..))
+g <- g + ggtitle("Normalized Distribution of the Mean of Exponentials")
+g <- g + stat_function(fun = dnorm, size = 1)  # Superimpose standard normal
+g + facet_grid(size ~ .)  # Split plots by size of samples
+```
+
+The plots above show the normalized mean values of the exponential distribution 
+for 2 samples, 10 samples, and 40 samples. Also, standard normal distribution 
+curves have been superimposed on the plots. It is apparent that the plots are 
+approaching that of the normal distribution curve. Moreover, the curves converge
+toward the normal distribution curve quite quickly as $n$ is increased towards 
+40.
+
+\pagebreak
+
+##Appendix
+
+###Sample Mean versus Theoretical Mean Code:
+```{r eval=FALSE}
+mns = apply(expdf, 1, mean)  # Take mean value of each of the 40 samples
+samplemean = mean(mns)  # Average of the 1000 means
+
+hist(mns, freq = FALSE, main = "Distribution of the Mean of 40 Exponentials",
+     xlab = "X")
+lines(density(mns))  # Add smoothed curve on top of histogram
+abline(v = samplemean, col = "green")  # Add vertical line for sample mean
+abline(v = 1/lambda, col = "red")  # Add vertical line for theoretical mean
+text(x = samplemean, y = 0.2, labels = round(samplemean,2))
+```
+
+###Sample Variance versus Theoretical Variance Code:
+```{r eval=FALSE}
+sampvar = var(mns)  # Variance of the 1000 means
+```
+
+###Distribution Code:
+```{r echo=FALSE}
+library(ggplot2)
+
+cfunc <- function(x, n) sqrt(n) * (mean(x) - 5) / 5  # CLT function
+dat <- data.frame(
+  x = c(apply(expdf[,1:2], 1, cfunc, 2),  # Apply func to 1000 obs. of 2 var
+        apply(expdf[,1:10], 1, cfunc, 10),  # Apply func to 1000 obs. of 10 var
+        apply(expdf[,1:40], 1, cfunc, 40)  # Apply func to 1000 obs. of 40 var
+        ),
+  size = factor(rep(c(2, 10, 40), rep(numofsims, 3))))  # Create factor
+g <- ggplot(dat, aes(x = x, fill = size)) + 
+     geom_histogram(colour = "black", binwidth = 0.2, aes(y = ..density..))
+g <- g + ggtitle("Normalized Distribution of the Mean of Exponentials")
+g <- g + stat_function(fun = dnorm, size = 1)  # Superimpose standard normal
+g + facet_grid(size ~ .)  # Split plots by size of samples
+```
